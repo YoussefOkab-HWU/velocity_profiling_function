@@ -1,0 +1,309 @@
+function [q1,q2,q3,qv1,qv2,qv3] = velocity_profiling (th1,th2,th3,qv1,qv2,qv3)
+persistent n;
+if isempty(n)
+    n = 0; % Initialize with default value if not defined
+end
+%This matlab code provides maintained joint velocities values in order to investigate reducing trajectory errors of legged robots, 
+%the code is based on the Boston Dynamics spot robot and written as a matlab function in simscape
+%print the current values
+disp("round number:")
+disp(n)
+disp("goal_values")
+disp(th1)
+disp(th2)
+disp(th3)
+disp('simulation_velocity:')
+disp(qv1)
+disp(qv2)
+disp(qv3)
+%length of each link of the Spot robot
+l1 = 0.091285;
+l2 = 0.338901;
+l3 = 0.361644;
+
+% Define persistent variables to store previous values
+persistent prev_th1;
+persistent prev_th2;
+persistent prev_th3;
+
+
+% Check if the persistent variables exist (not empty) before using them
+if isempty(prev_th1)
+    prev_th1 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_th2)
+    prev_th2 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_th3)
+    prev_th3 = 0; % Initialize with default value if not defined
+end
+
+disp("previous_values:")
+disp(prev_th1);
+disp(prev_th2);
+disp(prev_th3);
+%intiate previous joint velocity simulation values
+persistent prev_qv1;
+persistent prev_qv2;
+persistent prev_qv3;
+% Check if the persistent variables exist (not empty) before using them
+
+if isempty(prev_qv1)
+    prev_qv1 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_qv2)
+    prev_qv2 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_qv3)
+    prev_qv3 = 0; % Initialize with default value if not defined
+end
+%intiate previous joint velocity calculated values
+
+persistent prev_q1;
+persistent prev_q2;
+persistent prev_q3;
+% Check if the persistent variables exist (not empty) before using them
+if isempty(prev_q1)
+    prev_q1 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_q2)
+    prev_q2 = 0; % Initialize with default value if not defined
+end
+if isempty(prev_q3)
+    prev_q3 = 0; % Initialize with default value if not defined
+end
+%intiate previous joint velocity calculated values
+
+persistent per_q1;
+persistent per_q2;
+persistent per_q3;
+% Check if the persistent variables exist (not empty) before using them
+if isempty(per_q1)
+    per_q1 = 0; % Initialize with default value if not defined
+end
+if isempty(per_q2)
+    per_q2 = 0; % Initialize with default value if not defined
+end
+if isempty(per_q3)
+    per_q3 = 0; % Initialize with default value if not defined
+end
+%state the joint velocity values that will be used for the cartisean
+%velocity calculation
+q1 = per_q1;
+q2 = per_q2;
+q3 = per_q3;
+
+
+q = [q1;q2;q3];
+
+
+
+
+%cartisean velocity before current time step
+
+shea_t_minus_1 = [(sin(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) + l1*prev_qv1*cos(prev_th2)*cos(prev_th3))*(cos(prev_th2)*sin(prev_th3) + cos(prev_th3)*sin(prev_th2)) + (cos(prev_th2)*cos(prev_th3) - sin(prev_th2)*sin(prev_th3))*(l3*(prev_qv2 + prev_qv3) + cos(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) - l1*prev_qv1*cos(prev_th2)*sin(prev_th3));
+  (sin(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) + l1*prev_qv1*cos(prev_th2)*cos(prev_th3))*(sin(prev_th1)*sin(prev_th2)*sin(prev_th3) - cos(prev_th2)*cos(prev_th3)*sin(prev_th1)) + (cos(prev_th2)*sin(prev_th1)*sin(prev_th3) + cos(prev_th3)*sin(prev_th1)*sin(prev_th2))*(l3*(prev_qv2 + prev_qv3) + cos(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) - l1*prev_qv1*cos(prev_th2)*sin(prev_th3)) - cos(prev_th1)*(l3*(prev_qv1*cos(prev_th2)*cos(prev_th3) - prev_qv1*sin(prev_th2)*sin(prev_th3)) + l2*prev_qv1*cos(prev_th2));
+- sin(prev_th1)*(l3*(prev_qv1*cos(prev_th2)*cos(prev_th3) - prev_qv1*sin(prev_th2)*sin(prev_th3)) + l2*prev_qv1*cos(prev_th2)) - (cos(prev_th1)*cos(prev_th2)*sin(prev_th3) + cos(prev_th1)*cos(prev_th3)*sin(prev_th2))*(l3*(prev_qv2 + prev_qv3) + cos(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) - l1*prev_qv1*cos(prev_th2)*sin(prev_th3)) - (cos(prev_th1)*sin(prev_th2)*sin(prev_th3) - cos(prev_th1)*cos(prev_th2)*cos(prev_th3))*(sin(prev_th3)*(l2*prev_qv2 - l1*prev_qv1*sin(prev_th2)) + l1*prev_qv1*cos(prev_th2)*cos(prev_th3));
+(prev_qv1*cos(prev_th2)*sin(prev_th3) + prev_qv1*cos(prev_th3)*sin(prev_th2))*(cos(prev_th2)*sin(prev_th3) + cos(prev_th3)*sin(prev_th2)) + (prev_qv1*cos(prev_th2)*cos(prev_th3) - prev_qv1*sin(prev_th2)*sin(prev_th3))*(cos(prev_th2)*cos(prev_th3) - sin(prev_th2)*sin(prev_th3));
+(cos(prev_th2)*sin(prev_th1)*sin(prev_th3) + cos(prev_th3)*sin(prev_th1)*sin(prev_th2))*(prev_qv1*cos(prev_th2)*cos(prev_th3) - prev_qv1*sin(prev_th2)*sin(prev_th3)) + (sin(prev_th1)*sin(prev_th2)*sin(prev_th3) - cos(prev_th2)*cos(prev_th3)*sin(prev_th1))*(prev_qv1*cos(prev_th2)*sin(prev_th3) + prev_qv1*cos(prev_th3)*sin(prev_th2)) + cos(prev_th1)*(prev_qv2 + prev_qv3);
+sin(prev_th1)*(prev_qv2 + prev_qv3) - (cos(prev_th1)*sin(prev_th2)*sin(prev_th3) - cos(prev_th1)*cos(prev_th2)*cos(prev_th3))*(prev_qv1*cos(prev_th2)*sin(prev_th3) + prev_qv1*cos(prev_th3)*sin(prev_th2)) - (cos(prev_th1)*cos(prev_th2)*sin(prev_th3) + cos(prev_th1)*cos(prev_th3)*sin(prev_th2))*(prev_qv1*cos(prev_th2)*cos(prev_th3) - prev_qv1*sin(prev_th2)*sin(prev_th3))];
+%defining the joint velocities as the input velocities stated above
+
+
+        
+
+    
+    disp("shea_t_minus_1:");%print previous shea_t value
+    disp(shea_t_minus_1);
+    disp("current joint velocities");%print current joint velocity
+    disp("q1:")
+    disp(q1);
+    disp("q2:");
+    disp(q2);
+    disp("q3:");
+    disp(q3);
+
+    q1 = (q1);
+    q2 = (q2);
+    q3 = (q3);
+%cartisean velocity after current time step
+shea_t_plus_1 = [(sin(th3)*(l2*q2 - l1*q1*sin(th2)) + l1*q1*cos(th2)*cos(th3))*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + (cos(th2)*cos(th3) - sin(th2)*sin(th3))*(l3*(q2 + q3) + cos(th3)*(l2*q2 - l1*q1*sin(th2)) - l1*q1*cos(th2)*sin(th3));
+(sin(th3)*(l2*q2 - l1*q1*sin(th2)) + l1*q1*cos(th2)*cos(th3))*(sin(th1)*sin(th2)*sin(th3) - cos(th2)*cos(th3)*sin(th1)) + (cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2))*(l3*(q2 + q3) + cos(th3)*(l2*q2 - l1*q1*sin(th2)) - l1*q1*cos(th2)*sin(th3)) - cos(th1)*(l3*(q1*cos(th2)*cos(th3) - q1*sin(th2)*sin(th3)) + l2*q1*cos(th2));
+- sin(th1)*(l3*(q1*cos(th2)*cos(th3) - q1*sin(th2)*sin(th3)) + l2*q1*cos(th2)) - (cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2))*(l3*(q2 + q3) + cos(th3)*(l2*q2 - l1*q1*sin(th2)) - l1*q1*cos(th2)*sin(th3)) - (cos(th1)*sin(th2)*sin(th3) - cos(th1)*cos(th2)*cos(th3))*(sin(th3)*(l2*q2 - l1*q1*sin(th2)) + l1*q1*cos(th2)*cos(th3));
+(q1*cos(th2)*sin(th3) + q1*cos(th3)*sin(th2))*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) + (q1*cos(th2)*cos(th3) - q1*sin(th2)*sin(th3))*(cos(th2)*cos(th3) - sin(th2)*sin(th3));
+(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2))*(q1*cos(th2)*cos(th3) - q1*sin(th2)*sin(th3)) + (sin(th1)*sin(th2)*sin(th3) - cos(th2)*cos(th3)*sin(th1))*(q1*cos(th2)*sin(th3) + q1*cos(th3)*sin(th2)) + cos(th1)*(q2 + q3);
+sin(th1)*(q2 + q3) - (cos(th1)*sin(th2)*sin(th3) - cos(th1)*cos(th2)*cos(th3))*(q1*cos(th2)*sin(th3) + q1*cos(th3)*sin(th2)) - (cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2))*(q1*cos(th2)*cos(th3) - q1*sin(th2)*sin(th3))];
+
+    disp("shea_t_plus_1:");%print the next shea_t value
+    disp(shea_t_plus_1);
+    %the jacobian matrix
+%Jacobian Matrix
+ jacobian_matrix= [(l1*cos(th2)*cos(th3) - l1*sin(th2)*sin(th3))*(cos(th2)*sin(th3) + cos(th3)*sin(th2)) - (l1*cos(th2)*sin(th3) + l1*cos(th3)*sin(th2))*(cos(th2)*cos(th3) - sin(th2)*sin(th3)),                                       (l3 + l2*cos(th3))*(cos(th2)*cos(th3) - sin(th2)*sin(th3)) + l2*sin(th3)*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                    l3*(cos(th2)*cos(th3) - sin(th2)*sin(th3));
+ 
+ (sin(th1)*sin(th2)*sin(th3) - cos(th2)*cos(th3)*sin(th1))*(l1*cos(th2)*cos(th3) - l1*sin(th2)*sin(th3)) - (cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2))*(l1*cos(th2)*sin(th3) + l1*cos(th3)*sin(th2)) - cos(th1)*(l3*(cos(th2)*cos(th3) - sin(th2)*sin(th3)) + l2*cos(th2)),   (cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2))*(l3 + l2*cos(th3)) + l2*sin(th3)*(sin(th1)*sin(th2)*sin(th3) - cos(th2)*cos(th3)*sin(th1)),  l3*(cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2));
+ 
+(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2))*(l1*cos(th2)*sin(th3) + l1*cos(th3)*sin(th2)) - (cos(th1)*sin(th2)*sin(th3) - cos(th1)*cos(th2)*cos(th3))*(l1*cos(th2)*cos(th3) - l1*sin(th2)*sin(th3)) - sin(th1)*(l3*(cos(th2)*cos(th3) - sin(th2)*sin(th3)) + l2*cos(th2)), - (cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2))*(l3 + l2*cos(th3)) - l2*sin(th3)*(cos(th1)*sin(th2)*sin(th3) - cos(th1)*cos(th2)*cos(th3)), -l3*(cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2));
+ 
+(cos(th2)*sin(th3) + cos(th3)*sin(th2))^2 + (cos(th2)*cos(th3) - sin(th2)*sin(th3))^2,                                                                                                                                          0,                                                             0;
+
+ (cos(th2)*sin(th1)*sin(th3) + cos(th3)*sin(th1)*sin(th2))*(cos(th2)*cos(th3) - sin(th2)*sin(th3)) + (sin(th1)*sin(th2)*sin(th3) - cos(th2)*cos(th3)*sin(th1))*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                                                                                                                               cos(th1),                                                      cos(th1);
+
+ - (cos(th1)*cos(th2)*sin(th3) + cos(th1)*cos(th3)*sin(th2))*(cos(th2)*cos(th3) - sin(th2)*sin(th3)) - (cos(th1)*sin(th2)*sin(th3) - cos(th1)*cos(th2)*cos(th3))*(cos(th2)*sin(th3) + cos(th3)*sin(th2)),                                                                                                                                               sin(th1),                                                      sin(th1)];
+%  getting the inverse of the jacobian matrix using Moore-Penrose pseudo
+    jacobian_matrix_inverse = pinv(jacobian_matrix);
+    disp("jacobian_matrix_inverse:")
+    disp(jacobian_matrix_inverse)
+%calculate the new joint velocities using the velocity profiling controller
+
+
+    q = (jacobian_matrix_inverse*((shea_t_plus_1) - (shea_t_minus_1)));
+    
+    disp(q);
+    
+    q1 = q(1);
+    q2 = q(2);
+    q3 = q(3);
+%find out if the joint should be moving clockwise or anti-clockwise
+
+    disp("th1 - prev_th1=") 
+    disp(th1)
+    disp("-")
+    disp( prev_th1) 
+    disp("=")
+    disp(th1 - prev_th1)
+    disp("th2 - prev_th2=")
+    disp(th2)
+    disp("-")
+    disp( prev_th2) 
+    disp("=")
+    disp(th2 - prev_th2)
+    disp("th3 - prev_th3=")
+    disp(th3)
+    disp("-")
+    disp( prev_th3) 
+    disp("=")
+    disp(th3 - prev_th3)
+%adjust joint velocities according to joint rotation, if the difference is
+%0 joint velocity should be zero
+    if (th1 - prev_th1) < 0
+      if q1 >= 0
+         q1 = -1*q1;
+
+      elseif q1 < 0
+         q1 = q1;
+
+      end
+    elseif (th1 - prev_th1) > 0
+        if q1 > 0
+            q1 = q1;
+        elseif q1 < 0
+            q1 = -1*q1;
+        end
+    elseif(th1-prev_th1) == 0
+        q1 = 0;
+
+    end
+    if (th2 - prev_th2) < 0
+        if q2 > 0
+           q2 = -1*q2;
+        elseif q2 < 0
+           q2 = q2;
+
+        end
+    elseif (th2 - prev_th2) > 0
+        if q2 > 0
+           q2 = q2;
+        elseif q2 < 0
+           q2 = -1*q2;
+
+        end
+    elseif(th2-prev_th2) == 0
+        q2 = 0;
+
+    end
+    if (th3 - prev_th3) < 0
+        if q3 > 0
+           q3 = -1*q3;
+        elseif q3 < 0
+           q3 = q3;
+
+        end
+    elseif (th3 - prev_th3) > 0
+        if q3 > 0
+           q3 = q3;
+        elseif q3 < 0
+           q3 = -1*q3;
+
+        end
+    elseif(th3-prev_th3) == 0
+        q3 = 0;
+
+
+    end
+    %make sure the joint doesnt rotate more than a circle
+    if (q1<2*pi) && (q1>-2*pi)
+        q1 = q1;
+    elseif q1> 2*pi
+        q1 = mod(q1, 2*pi);
+        q1 = q1/(2*pi);
+    elseif q1<-2*pi
+         q1 = mod(q1, -2*pi);
+         q1 = q1/(-2*pi);
+    end
+    if (q2<2*pi) && (q2>-2*pi)
+        q2 = q2;
+    elseif q2> 2*pi
+        q2 = mod(q2, 2*pi);
+        q2 = q2/(2*pi);
+    elseif q2<-2*pi
+         q2 = mod(q2, -2*pi);
+         q2 = q2/(-2*pi);
+    end
+    if (q3<2*pi) && (q3>-2*pi)
+        q3 = q3;
+    elseif q3> 2*pi
+        q3 = mod(q3, 2*pi);
+        q3 = q3/(2*pi);
+    elseif q3<-2*pi
+         q3 = mod(q3, -2*pi);
+         q3 = q3/(-2*pi);
+    end
+
+   %smooth the results
+
+   q = [q1;q2;q3];
+   delta_cal_q =[((prev_q1 -q1)*0.6);((prev_q2 -q2)*0.6);((prev_q3 -q3)*0.6)];
+   q = q + delta_cal_q;
+
+    q1 = q(1);
+    q2 = q(2);
+    q3 = q(3);
+    %save the previous theta values
+    prev_th1=th1;
+    prev_th2=th2;
+    prev_th3=th3;
+    %save the previous joint velocity values
+
+     per_q1 = q1;
+     per_q2 = q2;
+     per_q3 = q3;
+    disp("next joint velocities");%print current joint velocity
+    disp("q1:")
+    disp(per_q1);
+    disp("q2:");
+    disp(per_q2);
+    disp("q3:");
+    disp(per_q3);
+    %save the previous joint velocity values
+
+    prev_q1 = q1;
+    prev_q2 = q2;
+    prev_q3 = q3;
+    %save the previous joint velocity simulation values
+
+    prev_qv1 = qv1;
+    prev_qv2 = qv2;
+    prev_qv3 = qv3;
+    %go to next round
+    n=n+1;
+end
